@@ -117,7 +117,7 @@ async function makeListingResponse(
     html = `<!DOCTYPE html>
 <html>
   <head>
-    <title>Index of ${path}</title>
+    <title>Arquivos em ${path}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="utf-8">
     <style>
@@ -140,7 +140,7 @@ async function makeListingResponse(
     </style>
   </head>
   <body>
-    <h1>Index of ${path}</h1>
+    <h1>Arquivos em ${path}</h1>
     <table>
       <tr><th>Filename</th><th>Modified</th><th>Size</th></tr>
 ${htmlList.join("\n")}
@@ -153,7 +153,9 @@ ${htmlList.join("\n")}
   return new Response(html === "" ? null : html, {
     status: 200,
     headers: {
-      "access-control-allow-origin": env.ALLOWED_ORIGINS || "",
+      // "Access-Control-Allow-Origin": env.ALLOWED_ORIGINS || "*",
+      "Access-Control-Allow-Origin": "*",
+      "AllowedHeaders": "*",
       "last-modified": lastModified === null ? "" : lastModified.toUTCString(),
       "content-type": "text/html",
       "cache-control": env.DIRECTORY_CACHE_CONTROL || "no-store",
@@ -193,6 +195,11 @@ export default {
 
     // Since we produce this result from the request, we don't need to strictly use an R2Range
     let range: ParsedRange | undefined;
+
+    // if (response != null) {
+    //   const responseHeaders = new Headers(response.headers)
+    //   responseHeaders.set('Access-Control-Allow-Origin', '*')
+    // }
 
     if (!response || !(response.ok || response.status == 304)) {
       if (env.LOGGING) {
@@ -364,7 +371,9 @@ export default {
           status: notFound ? 404 : range ? 206 : 200,
           headers: {
             "accept-ranges": "bytes",
-            "access-control-allow-origin": env.ALLOWED_ORIGINS || "",
+            // "access-control-allow-origin": env.ALLOWED_ORIGINS || "*",
+            "Access-Control-Allow-Origin" : "*",
+            "AllowedHeaders": "*",
 
             etag: notFound ? "" : file.httpEtag,
             // if the 404 file has a custom cache control, we respect it
