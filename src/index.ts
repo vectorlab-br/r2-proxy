@@ -16,7 +16,32 @@ export interface Env {
 
 const units = ["B", "KB", "MB", "GB", "TB"];
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "*",
+}
+
 type ParsedRange = { offset: number; length: number } | { suffix: number };
+
+function handleOptions(request: Request) {
+  if (request.headers.get("Origin") !== null &&
+      request.headers.get("Access-Control-Request-Method") !== null &&
+      request.headers.get("Access-Control-Request-Headers") !== null) {
+    // Handle CORS pre-flight request.
+    return new Response(null, {
+      headers: corsHeaders
+    })
+  } else {
+    // Handle standard OPTIONS request.
+    return new Response(null, {
+      headers: {
+        "Allow": "GET, OPTIONS",
+      }
+    })
+  }
+}
+
 
 function rangeHasLength(
   object: ParsedRange
@@ -178,9 +203,12 @@ export default {
     }
 
     if (request.method === "OPTIONS") {
-      return new Response(null, {
-        headers: { allow: allowedMethods.join(", ") },
-      });
+      // return new Response(null, {
+      //   headers: { allow: allowedMethods.join(", ") },
+      // });
+
+      return handleOptions(request);
+
     }
 
     let triedIndex = false;
